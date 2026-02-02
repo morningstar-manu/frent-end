@@ -1,20 +1,12 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient } from "react-query";
-import { Spinner } from "flowbite-react";
+import { Spinner, Table, TextInput } from "flowbite-react";
 import { AppointmentService } from "../_helpers";
 import dayjs from "dayjs";
 import { convertirEnFrancais, getBackgroundColor } from "../utils/statusStyle";
-import {
-  HiUser,
-  HiPhone,
-  HiLocationMarker,
-  HiCalendar,
-  HiUserCircle,
-} from "react-icons/hi";
 
 const formatCommercialName = (name) => {
-  if (!name) return "";
   const words = name.split("-");
   const formattedName = words
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -54,7 +46,7 @@ export const AppointmentList = ({ refreshList }) => {
   );
 
   useEffect(() => {
-    if (isError && error?.response && error.response.status === 201) {
+    if (isError && error.response && error.response.status === 201) {
       queryClient.invalidateQueries([
         "appointmentByUserId",
         userId,
@@ -80,148 +72,92 @@ export const AppointmentList = ({ refreshList }) => {
   };
 
   return (
-    <div className="p-6">
-      {/* Filter Bar */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <HiCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <input
-              type="month"
-              min="2023-01"
-              value={selectedDate}
-              onChange={handleDateChange}
-              className="input-field pl-10 w-48"
-            />
-          </div>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">
-            {sortedAppointments.length}
-          </span>{" "}
-          rendez-vous
-        </div>
+    <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+
+      <div className="flex items-center justify-between pb-4">
+        <TextInput
+          className=" p-1 pl-10 text-sm text-gray-900 w-80 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          type="month"
+          min="2023-01"
+          value={selectedDate}
+          onChange={handleDateChange}
+        />
       </div>
 
-      {/* Loading State */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="flex flex-col items-center gap-3">
-            <Spinner size="xl" />
-            <p className="text-sm text-muted-foreground">
-              Chargement des rendez-vous...
-            </p>
-          </div>
-        </div>
-      )}
 
-      {/* Empty State */}
-      {!isLoading && sortedAppointments.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-            <HiCalendar className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-medium text-foreground">
-            Aucun rendez-vous
-          </h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Aucun rendez-vous trouve pour cette periode
-          </p>
-        </div>
-      )}
+      <Table hoverable>
+        <Table.Head>
+          <Table.HeadCell>#</Table.HeadCell>
+          <Table.HeadCell>Date</Table.HeadCell>
+          <Table.HeadCell>Full Name</Table.HeadCell>
+          <Table.HeadCell>Phone</Table.HeadCell>
+          <Table.HeadCell>Address</Table.HeadCell>
+          <Table.HeadCell>Scheduling Date</Table.HeadCell>
+          <Table.HeadCell>Sales Representative</Table.HeadCell>
+          <Table.HeadCell>Status</Table.HeadCell>
+        </Table.Head>
 
-      {/* Table */}
-      {!isLoading && sortedAppointments.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="table-header px-4 py-3 text-left">#</th>
-                <th className="table-header px-4 py-3 text-left">Date</th>
-                <th className="table-header px-4 py-3 text-left">Patient</th>
-                <th className="table-header px-4 py-3 text-left">Telephone</th>
-                <th className="table-header px-4 py-3 text-left">Adresse</th>
-                <th className="table-header px-4 py-3 text-left">
-                  Date Programmee
-                </th>
-                <th className="table-header px-4 py-3 text-left">Commercial</th>
-                <th className="table-header px-4 py-3 text-left">Statut</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {sortedAppointments.map((appointment, index) => (
-                <tr
-                  key={appointment._id}
-                  className="hover:bg-muted/50 transition-colors group"
+        <Table.Body className="divide-y">
+          {sortedAppointments.map((appointment, index) => (
+            <Table.Row
+              key={appointment._id}
+              className="bg-white text-xs dark:border-gray-700 dark:bg-gray-800"
+            >
+              <Table.Cell>{index + 1}</Table.Cell>
+              <Table.Cell>
+                {dayjs(appointment.createdAt).format("DD/MM")}
+              </Table.Cell>
+              <Table.Cell
+                className="whitespace-no-wrap front-medium text-gray-900 dark:text-white"
+                style={{ whiteSpace: "nowrap" }}
+              >
+                {appointment.name.toUpperCase()}
+              </Table.Cell>
+
+              <Table.Cell
+                className="px-3 py-3 sm:px-4 overflow-auto"
+                style={{ whiteSpace: "nowrap", maxWidth: "120px" }}
+              >
+                {appointment.phone_1 && appointment.phone_2
+                  ? `${appointment.phone_1} / ${appointment.phone_2}`
+                  : appointment.phone_1 || appointment.phone_2}
+              </Table.Cell>
+
+              <Table.Cell
+                className="px-3 py-3 sm:px-6  overflow-auto"
+                style={{ whiteSpace: "nowrap", maxWidth: "120px" }}
+              >
+                {appointment.address.toLowerCase()}
+              </Table.Cell>
+              <Table.Cell>
+                {dayjs(appointment.date).format("DD/MM/YY")}, {appointment.time}
+              </Table.Cell>
+              {/* <Table.Cell>{appointment.commercial}</Table.Cell> */}
+              <Table.Cell>
+                {formatCommercialName(appointment.commercial)}
+              </Table.Cell>
+
+              <Table.Cell>
+                <span
+                  className={`relative inline-block px-3 py-1 font-semibold leading-tight rounded-full ${getBackgroundColor(
+                    appointment.status
+                  )}`}
+                  style={{ whiteSpace: "nowrap" }}
                 >
-                  <td className="px-4 py-4 text-sm text-muted-foreground">
-                    {index + 1}
-                  </td>
-                  <td className="px-4 py-4">
-                    <span className="text-sm font-medium text-foreground">
-                      {dayjs(appointment.createdAt).format("DD/MM")}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <HiUser className="w-4 h-4 text-primary" />
-                      </div>
-                      <span className="text-sm font-medium text-foreground whitespace-nowrap">
-                        {appointment.name?.toUpperCase()}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <HiPhone className="w-4 h-4" />
-                      <span className="whitespace-nowrap">
-                        {appointment.phone_1 && appointment.phone_2
-                          ? `${appointment.phone_1} / ${appointment.phone_2}`
-                          : appointment.phone_1 || appointment.phone_2 || "-"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground max-w-[150px]">
-                      <HiLocationMarker className="w-4 h-4 flex-shrink-0" />
-                      <span className="truncate">
-                        {appointment.address?.toLowerCase() || "-"}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2">
-                      <HiCalendar className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-foreground font-medium">
-                        {dayjs(appointment.date).format("DD/MM/YY")}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {appointment.time}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <HiUserCircle className="w-4 h-4" />
-                      <span className="whitespace-nowrap">
-                        {formatCommercialName(appointment.commercial)}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span
-                      className={`status-badge ${getBackgroundColor(
-                        appointment.status
-                      )}`}
-                    >
-                      {convertirEnFrancais(appointment.status)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  <span
+                    aria-hidden
+                    className="absolute text-xs inset-0 opacity-50 "
+                  />
+                  {convertirEnFrancais(appointment.status)}
+                </span>
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table>
+      {isLoading && (
+        <div className="text-center">
+          <Spinner aria-label="Default status example" size="xl" />
         </div>
       )}
     </div>
