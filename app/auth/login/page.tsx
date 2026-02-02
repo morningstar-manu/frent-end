@@ -40,7 +40,7 @@ export default function LoginPage() {
       await supabase.from('profiles').update({ is_online: true }).eq('id', user.id)
     }
 
-    router.push('/')
+    router.push('/dashboard')
     router.refresh()
   }
 

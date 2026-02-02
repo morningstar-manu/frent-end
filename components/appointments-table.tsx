@@ -26,7 +26,6 @@ import { format } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { Pencil, Trash2, Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useToast } from '@/hooks/use-toast'
 
 interface AppointmentsTableProps {
   appointments: Appointment[]
@@ -46,7 +45,6 @@ export function AppointmentsTable({
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const router = useRouter()
-  const { toast } = useToast()
 
   const handleRowClick = (appointment: Appointment) => {
     setSelectedAppointment(appointment)
@@ -65,16 +63,9 @@ export function AppointmentsTable({
     const result = await deleteAppointment(selectedAppointment.id)
     
     if (result.error) {
-      toast({
-        title: 'Erreur',
-        description: result.error,
-        variant: 'destructive',
-      })
+      console.error('[v0] Delete error:', result.error)
+      alert('Erreur: ' + result.error)
     } else {
-      toast({
-        title: 'Succes',
-        description: 'Rendez-vous supprime avec succes',
-      })
       setIsDetailOpen(false)
       router.refresh()
     }
