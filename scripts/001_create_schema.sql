@@ -1,4 +1,5 @@
 -- Linkuup Medical CRM Database Schema
+
 -- Profiles table for user information
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -43,74 +44,35 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.commercials ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 
--- Profiles policies
-CREATE POLICY "profiles_select_own" ON public.profiles 
-  FOR SELECT USING (auth.uid() = id);
+-- Profiles policies - users can see and update their own profile
+DROP POLICY IF EXISTS "profiles_select" ON public.profiles;
+CREATE POLICY "profiles_select" ON public.profiles FOR SELECT TO authenticated USING (true);
 
-CREATE POLICY "profiles_select_admin" ON public.profiles 
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'moderator'))
-  );
+DROP POLICY IF EXISTS "profiles_insert" ON public.profiles;
+CREATE POLICY "profiles_insert" ON public.profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "profiles_insert_own" ON public.profiles 
-  FOR INSERT WITH CHECK (auth.uid() = id);
+DROP POLICY IF EXISTS "profiles_update" ON public.profiles;
+CREATE POLICY "profiles_update" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
 
-CREATE POLICY "profiles_update_own" ON public.profiles 
-  FOR UPDATE USING (auth.uid() = id);
+-- Commercials policies - everyone authenticated can read
+DROP POLICY IF EXISTS "commercials_select" ON public.commercials;
+CREATE POLICY "commercials_select" ON public.commercials FOR SELECT TO authenticated USING (true);
 
-CREATE POLICY "profiles_update_admin" ON public.profiles 
-  FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-
-CREATE POLICY "profiles_delete_admin" ON public.profiles 
-  FOR DELETE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-
--- Commercials policies (everyone can read, only admin can modify)
-CREATE POLICY "commercials_select_all" ON public.commercials 
-  FOR SELECT USING (TRUE);
-
-CREATE POLICY "commercials_insert_admin" ON public.commercials 
-  FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-
-CREATE POLICY "commercials_update_admin" ON public.commercials 
-  FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-
-CREATE POLICY "commercials_delete_admin" ON public.commercials 
-  FOR DELETE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+DROP POLICY IF EXISTS "commercials_all" ON public.commercials;
+CREATE POLICY "commercials_all" ON public.commercials FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Appointments policies
-CREATE POLICY "appointments_select_own" ON public.appointments 
-  FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "appointments_select" ON public.appointments;
+CREATE POLICY "appointments_select" ON public.appointments FOR SELECT TO authenticated USING (true);
 
-CREATE POLICY "appointments_select_admin" ON public.appointments 
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'moderator'))
-  );
+DROP POLICY IF EXISTS "appointments_insert" ON public.appointments;
+CREATE POLICY "appointments_insert" ON public.appointments FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "appointments_insert_own" ON public.appointments 
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "appointments_update" ON public.appointments;
+CREATE POLICY "appointments_update" ON public.appointments FOR UPDATE TO authenticated USING (true);
 
-CREATE POLICY "appointments_update_own" ON public.appointments 
-  FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "appointments_update_admin" ON public.appointments 
-  FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-
-CREATE POLICY "appointments_delete_admin" ON public.appointments 
-  FOR DELETE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+DROP POLICY IF EXISTS "appointments_delete" ON public.appointments;
+CREATE POLICY "appointments_delete" ON public.appointments FOR DELETE TO authenticated USING (true);
 
 -- Trigger to auto-create profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
