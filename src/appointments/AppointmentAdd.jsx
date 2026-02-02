@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Label, Modal, Spinner, TextInput, Textarea } from "flowbite-react";
+import { Button, Spinner } from "flowbite-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useForm } from "react-hook-form";
 import { AppointmentService } from "../_helpers";
@@ -9,6 +9,16 @@ import { useWeekManager } from "../utils/dateUtils";
 import DatePickerDate from "./DatePickerDate";
 import DatePickerTime from "./DatePickerTime";
 import SalesRepresentativeSelect from "./SalesRepresentativeSelect";
+import {
+  HiUser,
+  HiPhone,
+  HiLocationMarker,
+  HiAnnotation,
+  HiUserCircle,
+  HiCalendar,
+  HiCheck,
+  HiX,
+} from "react-icons/hi";
 
 const AppointmentAdd = ({ closeModal }) => {
   const dispatch = useDispatch();
@@ -16,8 +26,12 @@ const AppointmentAdd = ({ closeModal }) => {
   const queryClient = useQueryClient();
   const { week } = useWeekManager();
 
-  // Add validation rules for each input field
-  const { register, handleSubmit, reset, formState: { isSubmitting, errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting, errors },
+  } = useForm({
     defaultValues: {
       commercial: "",
       date: "",
@@ -46,7 +60,7 @@ const AppointmentAdd = ({ closeModal }) => {
       await queryClient.invalidateQueries("appointmentByUserId");
       await queryClient.invalidateQueries(["appointmentsByWeek", week]);
 
-      dispatch(alertActions.success("Appointment successfully added"));
+      dispatch(alertActions.success("Rendez-vous ajoute avec succes"));
       closeModal();
       reset();
     } catch (err) {
@@ -65,148 +79,163 @@ const AppointmentAdd = ({ closeModal }) => {
   };
 
   return (
-    <>
-      <div className="max-auto w-full ">
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="-mx-3 flex flex-wrap">
-            <div className="w-full px-3 sm:w-1/2">
-              <Label
-                htmlFor="commercial"
-                className="mb-3 block text-base font-medium text-[#07074D]"
-              >
-                Sales Representative
-              </Label>
-              <SalesRepresentativeSelect register={register} />
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Commercial & Date/Time Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Commercial */}
+        <div className="space-y-2">
+          <label
+            htmlFor="commercial"
+            className="flex items-center gap-2 text-sm font-medium text-foreground"
+          >
+            <HiUserCircle className="w-4 h-4 text-primary" />
+            Commercial
+          </label>
+          <SalesRepresentativeSelect register={register} />
+          {errors.commercial && (
+            <span className="text-xs text-destructive">
+              {errors.commercial.message}
+            </span>
+          )}
+        </div>
 
-              {errors.commercial && (
-                <span className="text-red-500">
-                  {errors.commercial.message}
-                </span>
-              )}
-            </div>
-
-            <div className="w-full px-3 sm:w-1/2">
-              <div className="mb-5">
-                <Label
-                  htmlFor="date_1"
-                  className="mb-3 block text-base font-medium text-[#07074D]"
-                >
-                  Date and Time
-                </Label>
-
-                <div className="flex space-x-2">
-                  <DatePickerDate register={register} />
-                  <DatePickerTime register={register} />
-                </div>
-                {errors.date && (
-                  <span className="text-red-500">{errors.date.message}</span>
-                )}
-                {errors.time && (
-                  <span className="text-red-500">{errors.time.message}</span>
-                )}
-              </div>
-            </div>
+        {/* Date & Time */}
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm font-medium text-foreground">
+            <HiCalendar className="w-4 h-4 text-primary" />
+            Date et Heure
+          </label>
+          <div className="flex gap-3">
+            <DatePickerDate register={register} />
+            <DatePickerTime register={register} />
           </div>
-
-          <div className="mb-5">
-            <Label
-              htmlFor="name"
-              className="mb-3 block text-base font-medium text-[#07074D]"
-            >
-              Full Name
-            </Label>
-            <TextInput
-              type="text"
-              name="name"
-              id="name"
-              autoComplete="off"
-              placeholder="Full Name"
-              {...register("name", { required: "This field is required" })}
-            />
-            {errors.name && (
-              <span className="text-red-500">{errors.name.message}</span>
-            )}
-          </div>
-
-          <div className="-mx-3 flex flex-wrap">
-            <div className="w-full px-3 sm:w-1/2">
-              <Label
-                htmlFor="phoneFixe"
-                className="mb-3 block text-base font-medium text-[#07074D]"
-              >
-                Phone (fixe)
-              </Label>
-              <TextInput
-                type="text"
-                name="phoneFixe"
-                id="phoneFixe"
-                autoComplete="off"
-                placeholder="Fixe"
-                {...register("phone_1")}
-              />
-            </div>
-            <div className="w-full px-3 sm:w-1/2">
-              <Label
-                htmlFor="phoneMobile"
-                className="mb-3 block text-base font-medium text-[#07074D]"
-              >
-                Phone (mobile)
-              </Label>
-              <TextInput
-                type="text"
-                name="phoneMobile"
-                id="phoneMobile"
-                autoComplete="off"
-                placeholder="Mobile"
-                {...register("phone_2")}
-              />
-            </div>
-          </div>
-
-          <div className="mb-5">
-            <Label
-              htmlFor="address"
-              className="mb-3 block text-base font-medium text-[#07074D]"
-            >
-              Address
-            </Label>
-            <TextInput
-              type="text"
-              name="address"
-              autoComplete="off"
-              id="address"
-              placeholder="Casablanca, Maroc"
-              {...register("address")}
-            />
-          </div>
-
-          <div className="mb-5">
-            <Label
-              htmlFor="comment"
-              className="mb-3 block text-base font-medium text-[#07074D]"
-            >
-              Comment
-            </Label>
-            <Textarea
-              type="text"
-              name="comment"
-              id="comment"
-              placeholder="Comment"
-              {...register("comment")}
-            />
-          </div>
-
-          <Modal.Footer>
-            <Button disabled={isSubmitting} type="submit">
-              {isSubmitting ? <Spinner /> : "Save"}
-            </Button>
-            <Button color="gray" onClick={handleCancel}>
-              Cancel
-            </Button>
-          </Modal.Footer>
-        </form>
+          {(errors.date || errors.time) && (
+            <span className="text-xs text-destructive">
+              {errors.date?.message || errors.time?.message}
+            </span>
+          )}
+        </div>
       </div>
-    </>
+
+      {/* Patient Name */}
+      <div className="space-y-2">
+        <label
+          htmlFor="name"
+          className="flex items-center gap-2 text-sm font-medium text-foreground"
+        >
+          <HiUser className="w-4 h-4 text-primary" />
+          Nom complet du patient
+        </label>
+        <input
+          type="text"
+          id="name"
+          autoComplete="off"
+          placeholder="Entrez le nom complet"
+          className="input-field"
+          {...register("name", { required: "Ce champ est requis" })}
+        />
+        {errors.name && (
+          <span className="text-xs text-destructive">{errors.name.message}</span>
+        )}
+      </div>
+
+      {/* Phone Numbers */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <label
+            htmlFor="phoneFixe"
+            className="flex items-center gap-2 text-sm font-medium text-foreground"
+          >
+            <HiPhone className="w-4 h-4 text-primary" />
+            Telephone fixe
+          </label>
+          <input
+            type="text"
+            id="phoneFixe"
+            autoComplete="off"
+            placeholder="05XX XXX XXX"
+            className="input-field"
+            {...register("phone_1")}
+          />
+        </div>
+        <div className="space-y-2">
+          <label
+            htmlFor="phoneMobile"
+            className="flex items-center gap-2 text-sm font-medium text-foreground"
+          >
+            <HiPhone className="w-4 h-4 text-primary" />
+            Telephone mobile
+          </label>
+          <input
+            type="text"
+            id="phoneMobile"
+            autoComplete="off"
+            placeholder="06XX XXX XXX"
+            className="input-field"
+            {...register("phone_2")}
+          />
+        </div>
+      </div>
+
+      {/* Address */}
+      <div className="space-y-2">
+        <label
+          htmlFor="address"
+          className="flex items-center gap-2 text-sm font-medium text-foreground"
+        >
+          <HiLocationMarker className="w-4 h-4 text-primary" />
+          Adresse
+        </label>
+        <input
+          type="text"
+          id="address"
+          autoComplete="off"
+          placeholder="Casablanca, Maroc"
+          className="input-field"
+          {...register("address")}
+        />
+      </div>
+
+      {/* Comment */}
+      <div className="space-y-2">
+        <label
+          htmlFor="comment"
+          className="flex items-center gap-2 text-sm font-medium text-foreground"
+        >
+          <HiAnnotation className="w-4 h-4 text-primary" />
+          Commentaire
+        </label>
+        <textarea
+          id="comment"
+          rows={3}
+          placeholder="Ajouter des notes supplementaires..."
+          className="input-field resize-none"
+          {...register("comment")}
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+        <Button color="gray" onClick={handleCancel} className="flex items-center gap-2">
+          <HiX className="w-4 h-4" />
+          Annuler
+        </Button>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="btn-primary flex items-center gap-2"
+        >
+          {isSubmitting ? (
+            <Spinner size="sm" />
+          ) : (
+            <>
+              <HiCheck className="w-4 h-4" />
+              Enregistrer
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
   );
 };
 
