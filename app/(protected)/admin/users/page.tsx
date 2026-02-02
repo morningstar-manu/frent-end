@@ -54,7 +54,7 @@ export default function UsersManagementPage() {
   // Redirect if not admin
   useEffect(() => {
     if (!authLoading && profile && profile.role !== 'admin') {
-      redirect('/')
+      redirect('/dashboard')
     }
   }, [profile, authLoading])
 

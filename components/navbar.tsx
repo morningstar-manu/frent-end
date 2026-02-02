@@ -31,7 +31,7 @@ export function Navbar() {
       await supabase.from('profiles').update({ is_online: false }).eq('id', user.id)
     }
     await supabase.auth.signOut()
-    router.push('/auth/login')
+    router.push('/')
     router.refresh()
   }
 
@@ -40,7 +40,7 @@ export function Navbar() {
     : 'U'
 
   const navLinks = [
-    { href: '/', label: 'Accueil', icon: Home, roles: ['user', 'moderator', 'admin'] },
+    { href: '/dashboard', label: 'Accueil', icon: Home, roles: ['user', 'moderator', 'admin'] },
     { href: '/manager', label: 'Manager', icon: LayoutDashboard, roles: ['moderator', 'admin'] },
     { href: '/admin', label: 'Admin', icon: Users, roles: ['admin'] },
     { href: '/about', label: 'A propos', icon: Info, roles: ['user', 'moderator', 'admin'] },
@@ -54,7 +54,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 text-primary font-bold">
+          <Link href="/dashboard" className="flex items-center gap-2 text-primary font-bold">
             <Stethoscope className="h-6 w-6" />
             <span className="hidden sm:inline-block">Linkuup Medical</span>
           </Link>

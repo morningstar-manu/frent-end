@@ -48,7 +48,7 @@ export default function ManagerPage() {
   // Redirect if not moderator or admin
   useEffect(() => {
     if (!authLoading && profile && !['moderator', 'admin'].includes(profile.role)) {
-      redirect('/')
+      redirect('/dashboard')
     }
   }, [profile, authLoading])
 

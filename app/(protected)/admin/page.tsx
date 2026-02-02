@@ -35,7 +35,7 @@ export default function AdminPage() {
   // Redirect if not admin
   useEffect(() => {
     if (!authLoading && profile && profile.role !== 'admin') {
-      redirect('/')
+      redirect('/dashboard')
     }
   }, [profile, authLoading])
 
